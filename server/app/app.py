@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect
+import sqlite3
 from models import db, Location
 import os
 
@@ -9,8 +10,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///locations.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-@app.before_first_request
-def create_tables():
+with app.app_context():
     db.create_all()
 
 @app.route('/')
@@ -31,6 +31,14 @@ def save_location():
     db.session.add(location)
     db.session.commit()
     return jsonify({'message': 'Location saved successfully!'}), 201
+
+@app.route('/clear-data', methods=['POST'])
+def clear_data():
+    """Clear all data from the database."""
+    db.session.query(Location).delete()
+    db.session.commit()
+    return redirect('/')  # Redirect back to the map page
+
 
 @app.route('/api/locations', methods=['GET'])
 def get_locations():

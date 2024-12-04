@@ -4,14 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Location Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css" />
     <style>
-        #map { height: 100vh; }
+        #map { height: 90vh; }
+        .button-container {
+            text-align: center;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <div class="button-container">
+        <form action="/clear-data" method="POST">
+            <button type="submit" style="padding: 10px 20px; font-size: 16px;">Clear All Data</button>
+        </form>
+    </div>
     <script src="/static/main.js"></script>
 </body>
 </html>

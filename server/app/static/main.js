@@ -7,9 +7,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 fetch('/api/locations')
     .then(response => response.json())
     .then(data => {
-        data.forEach(location => {
-            L.marker([location.latitude, location.longitude])
-                .addTo(map)
-                .bindPopup(`Lat: ${location.latitude}, Lon: ${location.longitude}, Alt: ${location.altitude}`);
-        });
+        const latlngs = data.map(location => [location.latitude, location.longitude]);
+        L.polyline(latlngs, { color: 'blue' }).addTo(map);
     });
