@@ -41,7 +41,7 @@ def read_gps_data(serial_port='/dev/ttyS0', baudrate=115200):
                 print(f"Error reading GPS data: {e}")
                 return None
 
-def send_location_to_api(latitude, longitude, api_url):
+def send_location_to_api(self, latitude, longitude, api_url):
     """
     Sends location data to the specified API endpoint via POST request.
     """

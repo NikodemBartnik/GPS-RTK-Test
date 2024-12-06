@@ -36,11 +36,7 @@ maxReconnect=1
 maxReconnectTime=1200
 sleepTime=1 # So the first one is 1 second
 
-api_url = "100.77.9.22"
-
-
-
-
+api_url = "http://100.77.9.22:5000"
 
 class NtripClient(object):
     def __init__(self,
@@ -145,7 +141,7 @@ class NtripClient(object):
         if self.gps_file:
             self.gps_file.close()
 
-    def parse_gngga_sentence(nmea_sentence):
+    def parse_gngga_sentence(self, nmea_sentence):
         parts = nmea_sentence.split(',')
         if len(parts) < 10:
             return None  # Invalid sentence
@@ -165,7 +161,7 @@ class NtripClient(object):
             return None  # Handle parsing errors
         return lat, lon, alt
 
-    def send_data_API(latitude, longitude, api_url):
+    def send_data_API(self, latitude, longitude, api_url):
         data = {"latitude": latitude, "longitude": longitude}
         headers = {"Content-Type": "application/json"}
         try:
@@ -250,7 +246,7 @@ class NtripClient(object):
                             (raw_data, parsed_data) = self.nmr.read()
                             if bytes("GNGGA",'ascii') in raw_data :
                                 print(raw_data)
-                                location = self.parse_gngga_sentence(raw_data)
+                                location = self.parse_gngga_sentence(raw_data.decode('ascii'))
                                 if location:
                                     lat, lon, _ = location
                                     print(f"Parsed Location: Latitude={lat}, Longitude={lon}")
