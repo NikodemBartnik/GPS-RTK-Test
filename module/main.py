@@ -25,6 +25,7 @@ from optparse import OptionParser
 
 import serial
 from pynmeagps import NMEAReader
+import requests
 
 version=0.2
 useragent="NTRIP JCMBsoftPythonClient/%.1f" % version
@@ -34,6 +35,9 @@ factor=2 # How much the sleep time increases with each failed attempt
 maxReconnect=1
 maxReconnectTime=1200
 sleepTime=1 # So the first one is 1 second
+
+api_url = "100.77.9.22"
+
 
 
 
@@ -141,6 +145,36 @@ class NtripClient(object):
         if self.gps_file:
             self.gps_file.close()
 
+    def parse_gngga_sentence(nmea_sentence):
+        parts = nmea_sentence.split(',')
+        if len(parts) < 10:
+            return None  # Invalid sentence
+
+        # Latitude
+        try:
+            lat = float(parts[2][:2]) + float(parts[2][2:]) / 60.0
+            if parts[3] == 'S':
+                lat = -lat
+            # Longitude
+            lon = float(parts[4][:3]) + float(parts[4][3:]) / 60.0
+            if parts[5] == 'W':
+                lon = -lon
+            # Altitude
+            alt = float(parts[9]) if parts[9] else 0.0
+        except ValueError:
+            return None  # Handle parsing errors
+        return lat, lon, alt
+
+    def send_data_API(latitude, longitude, api_url):
+        data = {"latitude": latitude, "longitude": longitude}
+        headers = {"Content-Type": "application/json"}
+        try:
+            response = requests.post(api_url, json=data, headers=headers)
+            response.raise_for_status()
+            print(f"Location sent successfully: {response.status_code}, {response.text}")
+        except requests.exceptions.RequestException as e:
+            print(f"Failed to send location data: {e}")
+
     def readData(self):
         reconnectTry=1
         sleepTime=1
@@ -216,6 +250,11 @@ class NtripClient(object):
                             (raw_data, parsed_data) = self.nmr.read()
                             if bytes("GNGGA",'ascii') in raw_data :
                                 print(raw_data)
+                                location = self.parse_gngga_sentence(raw_data)
+                                if location:
+                                    lat, lon, _ = location
+                                    print(f"Parsed Location: Latitude={lat}, Longitude={lon}")
+                                    self.send_data_API(lat, lon, api_url)
                                 if self.gps_file:
                                     self.gps_file.write(raw_data)
                                     self.gps_file.flush()
@@ -276,6 +315,8 @@ class NtripClient(object):
                 self.socket.close()
             self.stream.close()
             sys.exit()
+
+    
         
 
 if __name__ == '__main__':
